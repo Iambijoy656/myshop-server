@@ -21,8 +21,27 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    const allHomeCollection = client.db("rentHome").collection("allHomes");
-    const usersCollection = client.db("rentHome").collection("users");
+    const productsCollection = client.db("myShop").collection("products");
+    const usersCollection = client.db("myShop").collection("users");
+
+
+
+    //users  save database
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+        //get all products
+        app.get("/allproducts", async (req, res) => {
+          const id = req.params.id;
+          const query = {};
+          const details = await allHomeCollection.findOne(query);
+          res.send(details);
+        });
+
+
   } finally {
   }
 }
