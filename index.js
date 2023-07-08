@@ -4,13 +4,11 @@ const app = express();
 const port = process.env.PORT || 5001;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 
 //midleware
 app.use(cors());
 app.use(express.json());
-
-//myShop
-//vJg4*Ut@#bBi6bm
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.iyuahvh.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
@@ -24,8 +22,6 @@ async function run() {
     const productsCollection = client.db("myShop").collection("products");
     const usersCollection = client.db("myShop").collection("users");
 
-
-
     //users  save database
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -33,15 +29,41 @@ async function run() {
       res.send(result);
     });
 
-        //get all products
-        app.get("/allproducts", async (req, res) => {
-          const id = req.params.id;
-          const query = {};
-          const details = await allHomeCollection.findOne(query);
-          res.send(details);
+    //get all products
+    app.get("/allProducts", async (req, res) => {
+      const query = {};
+      const products = await productsCollection.find(query).toArray();
+      res.send(products);
+    });
+
+    //get product by id
+    app.get("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const product = await productsCollection.findOne(query);
+      res.send(product);
+    });
+
+    // patch cart product
+    app.patch("/addToCart", async (req, res) => {
+      const product = req.body;
+     
+    });
+
+    // jwt
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "10hr",
         });
+        return res.send({ accessToken: token });
+      }
 
-
+      res.status(403).send({ accessToken: "" });
+    });
   } finally {
   }
 }
